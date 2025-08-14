@@ -6,7 +6,7 @@ import os
 is_local = "localhost" in os.getenv("STREAMLIT_SERVER_BASE_URL", "localhost")
 http_referer = "http://localhost:8501" if is_local else "https://agenticaitravelplannerapp-mq5sc4yvgzbj5bvzckwfdv.streamlit.app"
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")  # No fallback value!
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or st.secrets["openrouter"]["api_key"]  # No fallback value!
 
 if not OPENROUTER_API_KEY:
     raise ValueError("Missing OPENROUTER_API_KEY environment variable")
