@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 os.environ["CREWAI_KNOWLEDGE_DISABLED"] = "True"
 os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 from TravelAgents import guide_expert, location_expert, planner_expert
