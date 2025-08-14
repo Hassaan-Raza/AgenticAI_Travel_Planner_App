@@ -1,0 +1,8 @@
+streamlit
+crewai
+langchain
+duckduckgo-search
+markdown
+beautifulsoup4
+xhtml2pdf
+python-dotenv
