@@ -5,8 +5,3 @@ markdown>=3.5.2
 beautifulsoup4>=4.12.3
 xhtml2pdf>=0.2.11
 python-dotenv>=1.0.0
-chromadb>=0.4.24
-llama-index>=0.10.30
-sentence-transformers>=2.7.0
-pydantic>=2.6.4
-pysqlite3==1.0.0
