@@ -1,4 +1,6 @@
 import streamlit as st
+os.environ["CREWAI_KNOWLEDGE_DISABLED"] = "True"
+os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 from TravelAgents import guide_expert, location_expert, planner_expert
 from TravelTasks import location_task, guide_task, planner_task
 from crewai import Crew, Process
