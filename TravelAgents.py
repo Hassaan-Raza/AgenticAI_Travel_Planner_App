@@ -4,9 +4,13 @@ from crewai import LLM
 import os
 
 is_local = "localhost" in os.getenv("STREAMLIT_SERVER_BASE_URL", "localhost")
-http_referer = "http://localhost:8501" if is_local else "https://your-app-name.streamlit.app"
+http_referer = "http://localhost:8501" if is_local else "https://agenticaitravelplannerapp-mq5sc4yvgzbj5bvzckwfdv.streamlit.app"
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "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")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")  # No fallback value!
+
+if not OPENROUTER_API_KEY:
+    raise ValueError("Missing OPENROUTER_API_KEY environment variable")
+
 llm = LLM(
     model="openrouter/mistralai/mixtral-8x7b-instruct",
     api_key=OPENROUTER_API_KEY,
