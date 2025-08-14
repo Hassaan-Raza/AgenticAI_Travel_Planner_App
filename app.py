@@ -9,6 +9,15 @@ from pdf_gen import generate_pdf
 import traceback
 from datetime import datetime
 import time
+import sys
+try:
+    import pysqlite3
+    sys.modules['sqlite3'] = sys.modules['pysqlite3']
+except ImportError:
+    # Fallback to disabling knowledge
+    import os
+    os.environ["CREWAI_KNOWLEDGE_DISABLED"] = "True"
+    os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 
 # Custom CSS for styling
 st.markdown("""
