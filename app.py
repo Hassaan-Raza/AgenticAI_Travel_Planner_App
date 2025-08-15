@@ -1,7 +1,13 @@
 import streamlit as st
 import os
-__import__('pysqlite3')
+from pathlib import Path
 import sys
+
+# Set BASE_DIR to the current directory
+BASE_DIR = Path(__file__).resolve().parent  # Use os.getcwd() if you prefer the working directory
+
+# Swap standard SQLite3 with pysqlite3-binary
+__import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 DATABASES = {
@@ -10,7 +16,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-import os
 os.environ["CREWAI_KNOWLEDGE_DISABLED"] = "True"
 os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 from TravelAgents import guide_expert, location_expert, planner_expert
