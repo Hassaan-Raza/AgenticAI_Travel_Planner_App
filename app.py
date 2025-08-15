@@ -1,5 +1,16 @@
 import streamlit as st
 import os
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+import os
 os.environ["CREWAI_KNOWLEDGE_DISABLED"] = "True"
 os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 from TravelAgents import guide_expert, location_expert, planner_expert
