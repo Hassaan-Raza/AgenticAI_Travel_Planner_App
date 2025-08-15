@@ -5,3 +5,4 @@ markdown>=3.5.2
 beautifulsoup4>=4.12.3
 xhtml2pdf>=0.2.11
 python-dotenv>=1.0.0
+pysqlite3-binary>=0.4.6
