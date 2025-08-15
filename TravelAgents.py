@@ -1,5 +1,6 @@
 from crewai import Agent
 import os
+import streamlit as st
 os.environ["CREWAI_KNOWLEDGE_DISABLED"] = "True"
 os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 from TravelTools import search_web_tool
