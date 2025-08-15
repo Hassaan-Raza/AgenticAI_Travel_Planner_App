@@ -4,6 +4,16 @@ os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 from TravelTools import search_web_tool
 from crewai import LLM
 import os
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 is_local = "localhost" in os.getenv("STREAMLIT_SERVER_BASE_URL", "localhost")
 http_referer = "http://localhost:8501" if is_local else "https://agenticaitravelplannerapp-mq5sc4yvgzbj5bvzckwfdv.streamlit.app"
