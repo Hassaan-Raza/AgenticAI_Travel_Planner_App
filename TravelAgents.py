@@ -1,4 +1,5 @@
 from crewai import Agent
+import os
 os.environ["CREWAI_KNOWLEDGE_DISABLED"] = "True"
 os.environ["CREWAI_KNOWLEDGE_STORAGE_DISABLED"] = "True"
 from TravelTools import search_web_tool
