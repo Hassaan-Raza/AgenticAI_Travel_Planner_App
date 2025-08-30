@@ -103,6 +103,7 @@ st.markdown("""
     box-shadow: 0 8px 25px rgba(0,0,0,0.08);
     margin-top: 2rem;
     border-left: 5px solid var(--accent);
+    color: black;
 }
 
 .footer {
@@ -182,8 +183,52 @@ st.markdown("""
     66% { content: " 🗺️"; }
     100% { content: " ✈️"; }
 }
+
+/* Transport selection styling */
+.transport-option {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.transport-option:hover {
+    background-color: #f1f5f9;
+}
+
+.transport-option.selected {
+    background-color: #dbeafe;
+    border: 2px solid #3b82f6;
+}
+
+.transport-emoji {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.transport-label {
+    font-weight: 500;
+}
 </style>
 """, unsafe_allow_html=True)
+st.set_page_config(
+    page_title="Wander AI Planner",
+    page_icon="✈️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+# Initialize session state for plan visibility
+if 'show_plan' not in st.session_state:
+    st.session_state.show_plan = False
+if 'travel_plan' not in st.session_state:
+    st.session_state.travel_plan = None
+if 'transport_mode' not in st.session_state:
+    st.session_state.transport_mode = "plane"
+if 'show_plan_button' not in st.session_state:
+    st.session_state.show_plan_button = False
 
 # App Header
 st.markdown(
@@ -219,23 +264,48 @@ with st.form("travel_form"):
     col1, col2 = st.columns(2)
     with col1:
         st.markdown('<p class="input-label">Departure City</p>', unsafe_allow_html=True)
-        from_city = st.text_input("", placeholder="e.g., London, Paris, Tokyo", label_visibility="collapsed")  # Changed
+        from_city = st.text_input(
+            "Departure City",
+            placeholder="e.g., London, Paris, Tokyo",
+            label_visibility="collapsed"
+        )
 
         st.markdown('<p class="input-label">Travel Dates</p>', unsafe_allow_html=True)
         date_col1, date_col2 = st.columns(2)
         with date_col1:
-            date_from = st.date_input("Start", datetime(2025, 8, 13), label_visibility="collapsed")
+            date_from = st.date_input("Start Date", datetime(2025, 8, 13), label_visibility="collapsed")
         with date_col2:
-            date_to = st.date_input("End", datetime(2025, 8, 20), label_visibility="collapsed")
+            date_to = st.date_input("End Date", datetime(2025, 8, 20), label_visibility="collapsed")
 
     with col2:
         st.markdown('<p class="input-label">Destination City</p>', unsafe_allow_html=True)
-        destination_city = st.text_input("", placeholder="e.g., Rome, New York, Bali",
-                                         label_visibility="collapsed")  # Changed
+        destination_city = st.text_input(
+            "Destination City",
+            placeholder="e.g., Rome, New York, Bali",
+            label_visibility="collapsed"
+        )
 
         st.markdown('<p class="input-label">Travel Interests</p>', unsafe_allow_html=True)
-        interests = st.text_area("", placeholder="e.g., art museums, street food, hiking, photography",
-                                 label_visibility="collapsed", height=100)
+        interests = st.text_area(
+            "Travel Interests",
+            placeholder="e.g., art museums, street food, hiking, photography",
+            label_visibility="collapsed",
+            height=100
+        )
+
+    # Transportation mode selection
+    st.markdown('<p class="input-label">Transportation Mode</p>', unsafe_allow_html=True)
+    transport_options = ["✈️ Plane", "🚗 Car", "🚲 Bike", "🚆 Train", "🚌 Bus"]
+    transport = st.radio(
+        "Transportation Mode",
+        transport_options,
+        index=0,
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+
+    # Extract just the mode name for the backend
+    transport_mode = transport.split(" ")[1].lower()
 
     st.markdown('<div class="progress-bar"><div class="progress-fill" id="progress"></div></div>',
                 unsafe_allow_html=True)
@@ -257,15 +327,17 @@ if submitted:
                 f'<div class="progress-bar"><div class="progress-fill" style="width:{percent}%"></div></div>',
                 unsafe_allow_html=True
             )
-            time.sleep(0.5)
+            time.sleep(0.1)
+
         status_container = st.empty()
         with st.spinner("🧠 AI travel experts are crafting your perfect itinerary..."):
             try:
                 # Initialize Tasks
-                loc_task = location_task(location_expert, from_city, destination_city, date_from, date_to)
-                guid_task = guide_task(guide_expert, destination_city, interests, date_from, date_to)
-                plan_task = planner_task([loc_task, guid_task], planner_expert, destination_city, interests, date_from,
-                                         date_to)
+                loc_task = location_task(location_expert, from_city, destination_city, date_from, date_to,
+                                         transport_mode)
+                guid_task = guide_task(guide_expert, destination_city, interests, date_from, date_to, transport_mode)
+                plan_task = planner_task([loc_task, guid_task], planner_expert, from_city, destination_city, interests,
+                                         date_from, date_to, transport_mode)
 
                 # Define Crew
                 crew = Crew(
@@ -279,43 +351,19 @@ if submitted:
                 # Run Crew AI
                 result = crew.kickoff()
                 travel_plan_text = str(result)
+
+                # Store the result in session state
+                st.session_state.travel_plan = travel_plan_text
+                st.session_state.transport_mode = transport_mode
+
                 # Display Results
-                try:
-                    # Generate PDF
-                    pdf_bytes = generate_pdf(travel_plan_text)
+                status_container.markdown(
+                    '<div class="custom-status status-success">✅ Your personalized travel plan is ready!</div>',
+                    unsafe_allow_html=True
+                )
 
-                    # Display Results
-                    status_container.markdown(
-                        '<div class="custom-status status-success">✅ Your personalized travel plan is ready!</div>',
-                        unsafe_allow_html=True
-                    )
-
-                    # Display PDF download button
-                    st.download_button(
-                        label="📄 Download PDF Itinerary",
-                        data=pdf_bytes,
-                        file_name=f"{destination_city}_Travel_Plan.pdf",
-                        mime="application/pdf"
-                    )
-
-                    # Optional: Show preview
-                    with st.expander("Preview Your Itinerary"):
-                        st.markdown(f'<div class="results-container">{travel_plan_text}</div>', unsafe_allow_html=True)
-
-                except Exception as pdf_error:
-                    status_container.markdown(
-                        f'<div class="custom-status status-error">⚠️ PDF generation failed: {str(pdf_error)}</div>',
-                        unsafe_allow_html=True
-                    )
-
-                    # Text fallback
-                    st.markdown(f'<div class="results-container">{travel_plan_text}</div>', unsafe_allow_html=True)
-                    st.download_button(
-                        label="💾 Download Text Itinerary",
-                        data=travel_plan_text,
-                        file_name=f"{destination_city}_Travel_Plan.txt",
-                        mime="text/plain"
-                    )
+                # Show the "Show Plan" button
+                st.session_state.show_plan_button = True
 
             except Exception as e:
                 status_container.markdown(
@@ -324,9 +372,51 @@ if submitted:
                 )
                 st.info("Please try again or adjust your inputs")
 
-# Footer
+# Show the "Show Plan" button if we have a plan
+if hasattr(st.session_state, 'show_plan_button') and st.session_state.show_plan_button:
+    if st.button("👀 Show Travel Plan", use_container_width=True):
+        st.session_state.show_plan = True
+        st.session_state.show_plan_button = False
+        st.rerun()
+
+# Display the plan if it's supposed to be shown
+if hasattr(st.session_state, 'show_plan') and st.session_state.show_plan and st.session_state.travel_plan:
+    try:
+        # Generate PDF
+        pdf_bytes = generate_pdf(st.session_state.travel_plan, st.session_state.transport_mode)
+
+        # Display PDF download button
+        st.download_button(
+            label="📄 Download PDF Travel Plan",
+            data=pdf_bytes,
+            file_name=f"{destination_city}_Travel_Plan.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
+
+        # Show the plan preview
+        st.markdown(f'<div class="results-container">{st.session_state.travel_plan}</div>', unsafe_allow_html=True)
+
+    except Exception as pdf_error:
+        st.markdown(
+            f'<div class="custom-status status-error">⚠️ PDF generation failed: {str(pdf_error)}</div>',
+            unsafe_allow_html=True
+        )
+
+        # Text fallback
+        st.markdown(f'<div class="results-container">{st.session_state.travel_plan}</div>', unsafe_allow_html=True)
+        st.download_button(
+            label="💾 Download Text Travel Plan",
+            data=st.session_state.travel_plan,
+            file_name=f"{destination_city}_Travel_Plan.txt",
+            mime="text/plain",
+            use_container_width=True
+        )
+
+# Footer with the requested message
 st.markdown("""
 <div class="footer">
     <p>Made with ❤️ using Streamlit & CrewAI | Wander AI Planner © 2025</p>
+    <p style="color: #007a4d; font-weight: bold; margin-top: 10px;">🇵🇸 Free Palestine</p>
 </div>
 """, unsafe_allow_html=True)
