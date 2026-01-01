@@ -1,9 +1,10 @@
-streamlit>=1.33.0
-crewai>=0.28.8
-duckduckgo-search>=3.9.7
-markdown>=3.5.2
-beautifulsoup4>=4.12.3
-xhtml2pdf>=0.2.11
-python-dotenv>=1.0.0
+streamlit
+crewai
+duckduckgo-search
+markdown
+beautifulsoup4
+litellm
+xhtml2pdf
+python-dotenv
 pysqlite3-binary
-langchain-community>=0.0.1  # Add the missing langchain_community module
+langchain-community
